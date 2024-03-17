@@ -19,7 +19,7 @@ def sub_page():
 
     if st.button("Return to Main Page"):
         st.session_state.runpage = main_page
-        st.experimental_rerun()
+        st.rerun()
 
 def main_page():
     st.subheader("Main Page")
@@ -27,7 +27,7 @@ def main_page():
 
     if len(st.session_state.dta["selected_rows"]) == 1:
         st.session_state.runpage = sub_page
-        st.experimental_rerun()
+        st.rerun()
 
 if 'runpage' not in st.session_state:
     st.session_state.runpage = main_page

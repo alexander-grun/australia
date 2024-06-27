@@ -29,11 +29,12 @@ authenticator = stauth.Authenticate(
     config['pre-authorized']
 )
 
-authenticator.login()
+authenticator.login(location='sidebar')
 
 if st.session_state["authentication_status"]:
-    authenticator.logout()
-    st.write(f'Welcome *{st.session_state["name"]}*')
+    authenticator.logout(location='sidebar')
+    with st.sidebar:
+        st.write(f'Welcome *{st.session_state["name"]}*',)
     st.title('Premium analysis')
 
     #######################################################################___APP___#######################################
@@ -91,9 +92,11 @@ if st.session_state["authentication_status"]:
 
 
 elif st.session_state["authentication_status"] is False:
-    st.error('Username/password is incorrect')
+    with st.sidebar:
+        st.error('Username/password is incorrect')
 elif st.session_state["authentication_status"] is None:
-    st.warning('Please enter your username and password')
+    with st.sidebar:
+        st.warning('Please enter your username and password')
 
 
 # Visible to all

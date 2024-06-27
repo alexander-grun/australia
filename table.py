@@ -135,7 +135,7 @@ elif st.session_state["authentication_status"] is None:
     if ticker:
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.write(f'Info: {df[df['Ticker'] == ticker][df.columns[6]].values[0]}')
+            st.write(f"Info: {df[df['Ticker'] == ticker][df.columns[6]].values[0]}")
         with col2:
             st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
         with col3:

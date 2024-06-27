@@ -1,16 +1,14 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import streamlit_authenticator as stauth
-
+import yaml
+from yaml.loader import SafeLoader
 
 st.set_page_config(page_title="ASX", page_icon="💹", layout="wide")
 st.html("styles.html")
 
 
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-
-df = conn.query('select * from "Sheet1" where "Ticker" NOT NULL', usecols=list(range(20)))
+###########___Functions___##################
 
 def display_table(df):
     def apply_odd_row_class(row):
@@ -20,49 +18,131 @@ def display_table(df):
 
     st.dataframe(styled_df, use_container_width=True)
 
-st.title("📊 ASX")
-st.subheader("Browse all")
-display_table(df)
+with open('./config.yaml') as file:
+    config = yaml.load(file, Loader=SafeLoader)
 
-st.subheader("Select one")
-col1, col2, col3  = st.columns(3)
-with col1:
-    st.write("Ticker")
-    ticker = st.selectbox(
-        'Choose a Ticker',
-        df['Ticker'].sort_values().unique().tolist(),
-        placeholder='start typing...'
-    )
+authenticator = stauth.Authenticate(
+    config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days'],
+    config['pre-authorized']
+)
 
-with col2:
-    pass
-    # st.write("Company Name")
-    # company_name = st.selectbox(
-    #     'Choose a Company',
-    #     df['Company Name'].sort_values().unique().tolist(),
-    #     index=None,
-    #     placeholder='start typing...'
-    # )
-with col3:
-    pass
+authenticator.login()
 
-# if company_name :
-#     st.data_editor(df[df['Company Name'] == company_name].transpose(), key="name")
-if ticker:
+if st.session_state["authentication_status"]:
+    authenticator.logout()
+    st.write(f'Welcome *{st.session_state["name"]}*')
+    st.title('Premium analysis')
 
-    col1, col2,col3 = st.columns(3)
+    #######################################################################___APP___#######################################
+    conn = st.connection("gsheets", type=GSheetsConnection)
+
+    df = conn.query('select * from "Sheet1" where "Ticker" NOT NULL', usecols=list(range(20)))
+
+    st.title("📊 ASX")
+    st.subheader("Browse all")
+    display_table(df)
+
+    st.subheader("Select one")
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+        st.write("Ticker")
+        ticker = st.selectbox(
+            'Choose a Ticker',
+            df['Ticker'].sort_values().unique().tolist(),
+            placeholder='start typing...'
+        )
+
     with col2:
         pass
+        # st.write("Company Name")
+        # company_name = st.selectbox(
+        #     'Choose a Company',
+        #     df['Company Name'].sort_values().unique().tolist(),
+        #     index=None,
+        #     placeholder='start typing...'
+        # )
     with col3:
-        st.metric(label="CFO", value='{:,.1f}'.format(
-            float(df[df['Ticker'] == ticker][df.columns[6]].values[0].replace(' ', '').replace(',', '.'))),
-                  help="Net cash from / (used in) operating activities")
-        st.metric(label="CFI", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[7]].values[0]),
-                  help="Net cash from / (used in) investing activities")
-        st.metric(label="CFF", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[13]].values[0]),
-                  help="Net cash from / (used in) financing activities")
+        pass
+
+    # if company_name :
+    #     st.data_editor(df[df['Company Name'] == company_name].transpose(), key="name")
+    if ticker:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+        with col2:
+            pass
+        with col3:
+            st.metric(label="CFO", value='{:,.1f}'.format(
+                float(df[df['Ticker'] == ticker][df.columns[6]].values[0].replace(' ', '').replace(',', '.'))),
+                      help="Net cash from / (used in) operating activities")
+            st.metric(label="CFI", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[7]].values[0]),
+                      help="Net cash from / (used in) investing activities")
+            st.metric(label="CFF", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[13]].values[0]),
+                      help="Net cash from / (used in) financing activities")
+
+        # st.write(f'Info: {df[df['Company Name'] == company_name]["Business Description"].values[0]}')
 
 
-    # st.write(f'Info: {df[df['Company Name'] == company_name]["Business Description"].values[0]}')
+
+
+
+elif st.session_state["authentication_status"] is False:
+    st.error('Username/password is incorrect')
+elif st.session_state["authentication_status"] is None:
+    st.warning('Please enter your username and password')
+
+
+# Visible to all
+    st.title("ASX - public")
+
+    conn = st.connection("gsheets", type=GSheetsConnection)
+
+    df = conn.query('select * from "Public" where "Ticker" NOT NULL', usecols=list(range(6)))
+    st.subheader("Browse all")
+    display_table(df)
+
+    st.subheader("Select one")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.write("Ticker")
+        ticker = st.selectbox(
+            'Choose a Ticker',
+            df['Ticker'].sort_values().unique().tolist(),
+            placeholder='start typing...'
+        )
+
+    with col2:
+        pass
+        # st.write("Company Name")
+        # company_name = st.selectbox(
+        #     'Choose a Company',
+        #     df['Company Name'].sort_values().unique().tolist(),
+        #     index=None,
+        #     placeholder='start typing...'
+        # )
+    with col3:
+        pass
+
+    # if company_name :
+    #     st.data_editor(df[df['Company Name'] == company_name].transpose(), key="name")
+    if ticker:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+        with col2:
+            pass
+        with col3:
+            st.metric(label="CFO", value='{:,.1f}'.format(
+                float(df[df['Ticker'] == ticker][df.columns[3]].values[0].replace(' ', '').replace(',', '.'))),
+                      help="Net cash from / (used in) operating activities")
+            st.metric(label="CFI", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[4]].values[0]),
+                      help="Net cash from / (used in) investing activities")
+            st.metric(label="CFF", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[5]].values[0]),
+                      help="Net cash from / (used in) financing activities")
+
+
+

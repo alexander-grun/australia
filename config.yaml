@@ -1,0 +1,21 @@
+credentials:
+  usernames:
+    ag:
+      email: alexander.a.grun@gmail.com
+      failed_login_attempts: 0 # Will be managed automatically
+      logged_in: False # Will be managed automatically
+      name: Alexander Grun
+      password: $2a$12$xv7ujQcKv6Ulf9fsKf9Z4e5ihA85/b/61YUKZDfc5DwM8q/uVpoYK # Keep Hashed password only
+    ab:
+      email: andrew.bedell10@gmail.com
+      failed_login_attempts: 0 # Will be managed automatically
+      logged_in: False # Will be managed automatically
+      name: Andrew Bedell
+      password: $2a$12$NUfVn28IFkQq0wNnyYY7WOp4BGHjHblX4FOpx6p7tqc11qWEsGO5y # Keep Hashed password only
+cookie:
+  expiry_days: 30
+  key: random42 # Must be string
+  name: ASX
+pre-authorized:
+  emails:
+  - melsby@gmail.com

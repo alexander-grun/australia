@@ -40,16 +40,19 @@ if st.session_state["authentication_status"]:
     #######################################################################___APP___#######################################
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    df = conn.query('select * from "Sheet1" where "Ticker" NOT NULL', usecols=list(range(20)))
+    df = conn.query('''select sh1.*, com."Business Description" from "Sheet1" sh1  
+                        LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
+                        where sh1."Ticker" NOT NULL''',
+                    usecols=list(range(20)))
 
     st.title("📊 ASX")
     st.subheader("Browse all")
+
     display_table(df)
 
     st.subheader("Select one")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.write("Ticker")
         ticker = st.selectbox(
             'Choose a Ticker',
             df['Ticker'].sort_values().unique().tolist(),
@@ -73,9 +76,9 @@ if st.session_state["authentication_status"]:
     if ticker:
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+            st.write(f'Info: {df[df['Ticker'] == ticker][df.columns[20]].values[0]}')
         with col2:
-            pass
+            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
         with col3:
             st.metric(label="CFO", value='{:,.1f}'.format(
                 float(df[df['Ticker'] == ticker][df.columns[6]].values[0].replace(' ', '').replace(',', '.'))),
@@ -84,10 +87,6 @@ if st.session_state["authentication_status"]:
                       help="Net cash from / (used in) investing activities")
             st.metric(label="CFF", value='{:,.1f}'.format(df[df['Ticker'] == ticker][df.columns[13]].values[0]),
                       help="Net cash from / (used in) financing activities")
-
-        # st.write(f'Info: {df[df['Company Name'] == company_name]["Business Description"].values[0]}')
-
-
 
 
 
@@ -104,14 +103,15 @@ elif st.session_state["authentication_status"] is None:
 
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    df = conn.query('select * from "Public" where "Ticker" NOT NULL', usecols=list(range(6)))
+    df = conn.query('''select pub.*, com."Business Description" from "Public" pub  
+                        LEFT JOIN "Company" com on pub.Ticker = com.Ticker 
+                        where pub."Ticker" NOT NULL''', usecols=list(range(6)))
     st.subheader("Browse all")
     display_table(df)
 
     st.subheader("Select one")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.write("Ticker")
         ticker = st.selectbox(
             'Choose a Ticker',
             df['Ticker'].sort_values().unique().tolist(),
@@ -135,9 +135,9 @@ elif st.session_state["authentication_status"] is None:
     if ticker:
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+            st.write(f'Info: {df[df['Ticker'] == ticker][df.columns[6]].values[0]}')
         with col2:
-            pass
+            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
         with col3:
             st.metric(label="CFO", value='{:,.1f}'.format(
                 float(df[df['Ticker'] == ticker][df.columns[3]].values[0].replace(' ', '').replace(',', '.'))),

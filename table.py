@@ -38,7 +38,7 @@ if st.session_state["authentication_status"]:
     authenticator.logout(location='sidebar')
     with st.sidebar:
         st.write(f'Welcome *{st.session_state["name"]}*',)
-    st.title('Premium analysis')
+    st.title('ASX - Premium analysis')
 
     #######################################################################___APP___#######################################
     conn = st.connection("gsheets", type=GSheetsConnection)
@@ -106,16 +106,15 @@ if st.session_state["authentication_status"]:
                             ''',
                     usecols=list(range(10)))
 
-    st.title("📊 ASX")
-    st.subheader("Browse all")
+    st.subheader("📊 Browse all")
 
     display_table(df)
 
-    st.subheader("Select one")
-    col1, col2, col3 = st.columns(3)
+    st.subheader("✏️ Analyze one company")
+    col1, col2, col3 = st.columns([1,1,3])
     with col1:
         ticker = st.selectbox(
-            'Choose a Ticker',
+            'Choose a ticker',
             df['Ticker'].sort_values().unique().tolist(),
             placeholder='start typing...'
         )
@@ -135,10 +134,10 @@ if st.session_state["authentication_status"]:
     # if company_name :
     #     st.data_editor(df[df['Company Name'] == company_name].transpose(), key="name")
     if ticker:
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns([1,3,1])
         df1 = df[df['Ticker'] == ticker]
         with col1:
-            st.write(f"Info: {df1['Business Description'].iloc[0]}")
+            st.caption(f"Info: {df1['Business Description'].iloc[0]}", )
         with col2:
             df1.set_index("Year-Quarter", inplace=True)
             df1.sort_index(ascending=False, inplace = True)
@@ -153,7 +152,7 @@ if st.session_state["authentication_status"]:
             st.metric(label="CFF", value='{:.0f}'.format(float(df1["Net cash from / (used in) financing activities"].iloc[0])),
                       help="Net cash from / (used in) financing activities")
 
-        st.subheader("📄Announcements/Reports")
+        st.subheader("📄Reports/Announcements")
 
         # Data preprocessing and type conversion
         df_url['Predicted_Quartery_report'] = df_url['Predicted_Quartery_report'].fillna(0).astype(int)
@@ -206,14 +205,14 @@ elif st.session_state["authentication_status"] is None:
     df = conn.query('''select pub.*, com."Business Description" from "Public" pub  
                         LEFT JOIN "Company" com on pub.Ticker = com.Ticker 
                         where pub."Ticker" NOT NULL''', usecols=list(range(6)))
-    st.subheader("Browse all")
+    st.subheader("📊 Browse all")
     display_table(df)
 
-    st.subheader("Select one")
+    st.subheader("✏️ Select one")
     col1, col2, col3 = st.columns(3)
     with col1:
         ticker = st.selectbox(
-            'Choose a Ticker',
+            'Choose a ticker',
             df['Ticker'].sort_values().unique().tolist(),
             placeholder='start typing...'
         )

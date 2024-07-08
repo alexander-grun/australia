@@ -108,7 +108,27 @@ if st.session_state["authentication_status"]:
 
     st.subheader("📊 Browse all")
 
-    display_table(df)
+    min_cfo, max_cfo = int(df['Net cash from / (used in) operating activities'].min()), int(df['Net cash from / (used in) operating activities'].max())
+    min_cfi, max_cfi = int(df['Net cash from / (used in) investing activities'].min()), int(df['Net cash from / (used in) investing activities'].max())
+    min_cff, max_cff = int(df['Net cash from / (used in) financing activities'].min()), int(df['Net cash from / (used in) financing activities'].max())
+    col1, col2, col3,col4, col5 = st.columns([2,1,2,1,2])
+    with col1:
+        cfo_slicer = st.slider("CFO", min_value=min_cfo, max_value=max_cfo, value=(min_cfo, max_cfo))
+    with col2:
+
+        pass
+    with col3:
+        cfi_slicer = st.slider("CFI", min_value=min_cfi, max_value=max_cfi, value=(min_cfi, max_cfi))
+    with col4:
+        pass
+    with col5:
+        cff_slicer = st.slider("CFF", min_value=min_cff, max_value=max_cff, value=(min_cff, max_cff))
+
+    sliced_df = (df[(df['Net cash from / (used in) operating activities'] >= cfo_slicer[0]) & (df['Net cash from / (used in) operating activities'] <= cfo_slicer[1]) &
+                 (df['Net cash from / (used in) investing activities'] >= cfi_slicer[0]) & (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
+                 (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) & (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
+
+    display_table(sliced_df)
 
     st.subheader("✏️ Analyze one company")
     col1, col2, col3 = st.columns([1,1,3])

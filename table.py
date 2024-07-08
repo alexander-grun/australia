@@ -65,10 +65,33 @@ if st.session_state["authentication_status"]:
                             sh1."Total available funding",
                             sh1."Estimated quarters of funding available",
                             sh1."Section 8.8",
+                            sh1."IQ Cash",
+                            sh1."IQ Cash Burn",
                             com."Business Description" from "Sheet100" sh1  
                         LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
                         where sh1."Ticker" NOT NULL''',
-                    usecols=list(range(23)))
+                    usecols=list(range(26)))
+
+    df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).astype(int)
+    df["Government grants and tax incentives"] = df["Government grants and tax incentives"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Net cash from / (used in) operating activities"] = df["Net cash from / (used in) operating activities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Net cash from / (used in) investing activities"] = df["Net cash from / (used in) investing activities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Proceeds from issues of equity securities"] = df["Proceeds from issues of equity securities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Proceeds from issue of convertible debt securities"] = df["Proceeds from issue of convertible debt securities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Proceeds from borrowings"] = df["Proceeds from borrowings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Repayment of borrowings"] = df["Repayment of borrowings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Dividends paid"] = df["Dividends paid"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Net cash from / (used in) financing activities"] = df["Net cash from / (used in) financing activities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Total Financing Facilities (Amount drawn at quarter end)"] = df["Total Financing Facilities (Amount drawn at quarter end)"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Unused financing facilities available at quarter end"] = df["Unused financing facilities available at quarter end"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Cash and cash equivalents at quarter end"] = df["Cash and cash equivalents at quarter end"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Total available funding"] = df["Total available funding"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+
+
     df_url = conn.query('''select 
                             url.header,
                             url.document_release_date,
@@ -113,16 +136,21 @@ if st.session_state["authentication_status"]:
     #     st.data_editor(df[df['Company Name'] == company_name].transpose(), key="name")
     if ticker:
         col1, col2, col3 = st.columns(3)
+        df1 = df[df['Ticker'] == ticker]
         with col1:
-            st.write(f"Info: {df[df['Ticker'] == ticker][df.columns[22]].values[0]}")
+            st.write(f"Info: {df1['Business Description'].iloc[0]}")
         with col2:
-            st.dataframe(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+            df1.set_index("Year-Quarter", inplace=True)
+            df1.sort_index(ascending=False, inplace = True)
+            st.dataframe(df1.transpose(), key="ticker", use_container_width=True, )
+
+
         with col3:
-            st.metric(label="CFO", value='{:.0f}'.format(float(df[df['Ticker'] == ticker][df.columns[7]].values[0])),
+            st.metric(label="CFO", value='{:.0f}'.format(float(df1["Net cash from / (used in) operating activities"].iloc[0])),
                       help="Net cash from / (used in) operating activities")
-            st.metric(label="CFI", value='{:.0f}'.format(float(df[df['Ticker'] == ticker][df.columns[8]].values[0])),
+            st.metric(label="CFI", value='{:.0f}'.format(float(df1["Net cash from / (used in) investing activities"].iloc[0])),
                       help="Net cash from / (used in) investing activities")
-            st.metric(label="CFF", value='{:.0f}'.format(float(df[df['Ticker'] == ticker][df.columns[15]].values[0])),
+            st.metric(label="CFF", value='{:.0f}'.format(float(df1["Net cash from / (used in) financing activities"].iloc[0])),
                       help="Net cash from / (used in) financing activities")
 
         st.subheader("📄Announcements/Reports")

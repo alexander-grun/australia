@@ -11,6 +11,16 @@ st.html("styles.html")
 
 ###########___Functions___##################
 
+# Function to update the slider when number input changes
+def update_cfo_slider():
+    st.session_state.cfo_slider = (st.session_state.cfo_numeric_min, st.session_state.cfo_numeric_max)
+
+
+# Function to update number input when slider changes
+def update_cfo_numeric():
+    st.session_state.cfo_numeric_min, st.session_state.cfo_numeric_max = st.session_state.cfo_slider
+
+
 def apply_odd_row_class(row):
     return ["background-color: #f8f8f8" if row.name % 2 != 0 else "" for _ in row]
 
@@ -110,22 +120,46 @@ if st.session_state["authentication_status"]:
     min_cfo, max_cfo = int(df['Net cash from / (used in) operating activities'].min()), int(df['Net cash from / (used in) operating activities'].max())
     min_cfi, max_cfi = int(df['Net cash from / (used in) investing activities'].min()), int(df['Net cash from / (used in) investing activities'].max())
     min_cff, max_cff = int(df['Net cash from / (used in) financing activities'].min()), int(df['Net cash from / (used in) financing activities'].max())
-    col1, col2, col3,col4, col5 = st.columns([2,1,2,1,2])
-    with col1:
-        cfo_slicer = st.slider("CFO", min_value=min_cfo, max_value=max_cfo, value=(min_cfo, max_cfo))
-    with col2:
 
-        pass
+    # Initialize session state variables if they don't exist
+    if 'cfo_slider' not in st.session_state:
+        st.session_state.cfo_slider = (min_cfo, max_cfo)
+    if 'cfo_numeric_min' not in st.session_state:
+        st.session_state.cfo_numeric_min = min_cfo
+    if 'cfo_numeric_max' not in st.session_state:
+        st.session_state.cfo_numeric_max = max_cfo
+
+    col1, col2, col3,col4, col5 = st.columns([2,1,2,1,2])
+
+    with col1:
+        st.html('<span class="slider"></span>')
+        st.subheader("CFO")
+        col1_1, col1_2, col1_3 = st.columns([2, 1, 2])
+        with col1_1:
+            # Numeric input for CFO min and max
+            st.number_input('Min', min_value=min_cfo, max_value=max_cfo, value=min_cfo, key='cfo_numeric_min',
+                            on_change=update_cfo_slider)
+        with col1_3:
+            st.number_input('Max', min_value=min_cfo, max_value=max_cfo, value=max_cfo, key='cfo_numeric_max',
+                            on_change=update_cfo_slider)
+
+        # Slider for CFO
+        st.slider("CFO", min_value=min_cfo, max_value=max_cfo, value=(min_cfo, max_cfo), key='cfo_slider',
+                  on_change=update_cfo_numeric, label_visibility="hidden")
+
+
     with col3:
         cfi_slicer = st.slider("CFI", min_value=min_cfi, max_value=max_cfi, value=(min_cfi, max_cfi))
-    with col4:
-        pass
+
     with col5:
         cff_slicer = st.slider("CFF", min_value=min_cff, max_value=max_cff, value=(min_cff, max_cff))
 
-    sliced_df = (df[(df['Net cash from / (used in) operating activities'] >= cfo_slicer[0]) & (df['Net cash from / (used in) operating activities'] <= cfo_slicer[1]) &
-                 (df['Net cash from / (used in) investing activities'] >= cfi_slicer[0]) & (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
-                 (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) & (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
+    sliced_df = (df[(df['Net cash from / (used in) operating activities'] >= st.session_state.cfo_slider[0]) &
+                    (df['Net cash from / (used in) operating activities'] <= st.session_state.cfo_slider[1]) &
+                    (df['Net cash from / (used in) investing activities'] >= cfi_slicer[0]) &
+                    (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
+                    (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
+                    (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
 
     display_table(sliced_df)
 
@@ -221,9 +255,16 @@ elif st.session_state["authentication_status"] is None:
 
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    df = conn.query('''select pub.*, com."Business Description" from "Public" pub  
+    df = conn.query('''select
+                             pub."Ticker",
+                             pub."Company Name",
+                             pub."Quarter Ended (current quarter)",
+                             pub."Net cash from / (used in) operating activities",
+                             pub."Net cash from / (used in) investing activities",
+                             pub."Net cash from / (used in) financing activities",    
+                        com."Business Description" from "Public" pub  
                         LEFT JOIN "Company" com on pub.Ticker = com.Ticker 
-                        where pub."Ticker" NOT NULL''', usecols=list(range(6)))
+                        where pub."Ticker" NOT NULL''')
     st.subheader("📊 Browse all")
     display_table(df)
 

@@ -69,8 +69,8 @@ if st.session_state["authentication_status"]:
                             sh1."IQ Cash Burn",
                             com."Business Description" from "Sheet100" sh1  
                         LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
-                        where sh1."Ticker" NOT NULL''',
-                    usecols=list(range(26)))
+                        where sh1."Ticker" NOT NULL''')
+
 
     df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).astype(int)
     df["Government grants and tax incentives"] = df["Government grants and tax incentives"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
@@ -103,8 +103,7 @@ if st.session_state["authentication_status"]:
                             from "URLS" url
                             where url.issuer_code  NOT NULL
                             AND url.header != 'error'
-                            ''',
-                    usecols=list(range(10)))
+                            ''')
 
     st.subheader("📊 Browse all")
 

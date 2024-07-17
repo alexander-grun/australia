@@ -95,6 +95,7 @@ if st.session_state["authentication_status"]:
     df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
     df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
     df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
+    df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].str.replace(',', '.')
 
 
     df_url = conn.query('''select 
@@ -174,20 +175,6 @@ if st.session_state["authentication_status"]:
             placeholder='start typing...'
         )
 
-    with col2:
-        pass
-        # st.write("Company Name")
-        # company_name = st.selectbox(
-        #     'Choose a Company',
-        #     df['Company Name'].sort_values().unique().tolist(),
-        #     index=None,
-        #     placeholder='start typing...'
-        # )
-    with col3:
-        pass
-
-    # if company_name :
-    #     st.data_editor(df[df['Company Name'] == company_name].transpose(), key="name")
     if ticker:
         col1, col2, col3 = st.columns([1,3,1])
         df1 = df[df['Ticker'] == ticker]
@@ -196,8 +183,8 @@ if st.session_state["authentication_status"]:
         with col2:
             df1.set_index("Year-Quarter", inplace=True)
             df1.sort_index(ascending=False, inplace = True)
-            st.dataframe(df1.transpose(), key="ticker", use_container_width=True, )
-
+            df1 = df1.drop(['Ticker', 'Company Name','Units/Currency','Business Description'], axis=1)
+            st.dataframe(df1.transpose(), key="ticker",use_container_width=True, )
 
         with col3:
             st.metric(label="CFO", value='{:.0f}'.format(float(df1["Net cash from / (used in) operating activities"].iloc[0])),
@@ -237,6 +224,10 @@ if st.session_state["authentication_status"]:
             "number_of_pages": "Pages",  # Column for number of pages
             "issuer_code": "Ticker"  # Column for ticker
         }, hide_index=True)
+
+    st.subheader("🕗Recent Placements")
+    st.write("Coming soon …")
+
 
 
 ####################################____________END OF PREMIUM APP______________########################################

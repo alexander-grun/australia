@@ -24,12 +24,6 @@ def update_cfo_numeric():
 def apply_odd_row_class(row):
     return ["background-color: #f8f8f8" if row.name % 2 != 0 else "" for _ in row]
 
-def display_table(df):
-
-
-    styled_df = df.style.apply(apply_odd_row_class, axis=1)
-
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
 with open('./config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
@@ -161,7 +155,14 @@ if st.session_state["authentication_status"]:
                     (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
                     (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
 
-    display_table(sliced_df)
+
+    st.dataframe(sliced_df, column_config={
+        "Net cash from / (used in) operating activities": st.column_config.NumberColumn(label="CFO", help="Net cash from / (used in) operating activities"),
+        "Net cash from / (used in) investing activities": st.column_config.NumberColumn(label="CFI",help="Net cash from / (used in) investing activities"),
+        "Net cash from / (used in) financing activities": st.column_config.NumberColumn(label="CFF",help="Net cash from / (used in) financing activities"),
+                                                },
+                 hide_index=True,
+                 use_container_width=True)
 
     st.subheader("✏️ Analyze one company")
     col1, col2, col3 = st.columns([1,1,3])
@@ -227,11 +228,8 @@ if st.session_state["authentication_status"]:
         df_url = df_url.drop(columns=['Predicted_Quartery_report'])
         df_url = df_url.reset_index(drop=True)
 
-        # Applying custom styling to the DataFrame
-        styled_url = df_url.style.apply(apply_odd_row_class, axis=1)
-
         # Displaying the DataFrame with specific column configurations
-        st.dataframe(styled_url, column_config={
+        st.dataframe(df_url, column_config={
             "url": st.column_config.LinkColumn("URL"),  # Link column for URL
             "document_release_date": st.column_config.DateColumn("Publication Date", format="DD-MM-YYYY"),
             # Date column for publication date
@@ -266,7 +264,7 @@ elif st.session_state["authentication_status"] is None:
                         LEFT JOIN "Company" com on pub.Ticker = com.Ticker 
                         where pub."Ticker" NOT NULL''')
     st.subheader("📊 Browse all")
-    display_table(df)
+    st.dataframe(df, use_container_width=True, hide_index=True)
 
     st.subheader("✏️ Select one")
     col1, col2, col3 = st.columns(3)

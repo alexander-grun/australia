@@ -7,6 +7,7 @@ import pandas as pd
 
 st.set_page_config(page_title="ASX", page_icon="💹", layout="wide")
 st.html("styles.html")
+st.elements.utils._shown_default_value_warning=True
 
 
 ###########___Functions___##################

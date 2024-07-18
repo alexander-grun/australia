@@ -156,8 +156,27 @@ if st.session_state["authentication_status"]:
                     (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
                     (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
                     (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
-
-
+    
+    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightblue', subset=["IQ Cash", "IQ Cash Burn"])
+    sliced_df = sliced_df.format({
+    "Receipts from Customers": "{:,.0f}",
+    "Government grants and tax incentives": "{:,.0f}",
+    "Net cash from / (used in) operating activities": "{:,.0f}",
+    "Net cash from / (used in) investing activities": "{:,.0f}",
+    "Proceeds from issues of equity securities": "{:,.0f}",
+    "Proceeds from issue of convertible debt securities": "{:,.0f}",
+    "Proceeds from borrowings": "{:,.0f}",
+    "Repayment of borrowings": "{:,.0f}",
+    "Dividends paid": "{:,.0f}",
+    "Net cash from / (used in) financing activities": "{:,.0f}",
+    "Total Financing Facilities (Amount drawn at quarter end)": "{:,.0f}",
+    "Unused financing facilities available at quarter end": "{:,.0f}",
+    "Total relevant outgoings": "{:,.0f}",
+    "Cash and cash equivalents at quarter end": "{:,.0f}",
+    "Total available funding": "{:,.0f}",
+    "IQ Cash": "{:,.0f}",
+    "IQ Cash Burn": "{:,.0f}"
+    })
     st.dataframe(sliced_df, column_config={
         "Net cash from / (used in) operating activities": st.column_config.NumberColumn(label="CFO", help="Net cash from / (used in) operating activities"),
         "Net cash from / (used in) investing activities": st.column_config.NumberColumn(label="CFI",help="Net cash from / (used in) investing activities"),
@@ -184,15 +203,55 @@ if st.session_state["authentication_status"]:
             df1.set_index("Year-Quarter", inplace=True)
             df1.sort_index(ascending=False, inplace = True)
             df1 = df1.drop(['Ticker', 'Company Name','Units/Currency','Business Description'], axis=1)
-            st.dataframe(df1.transpose(), key="ticker",use_container_width=True, )
+            df1 = df1.transpose()
+            #
+            #
+            # def apply_style(row):
+            #     styles = ['' for _ in row.index]  # Initialize styles with empty strings for each column in the row
+            #
+            #     # Check if the row name (which is row.name) is either "IQ Cash" or "IQ Cash Burn"
+            #     if row.name == "IQ Cash" or row.name == "IQ Cash Burn":
+            #         # Iterate over each value (v) in the row and apply the style conditionally
+            #         for i, v in enumerate(row):
+            #             if v < 0:
+            #                 styles[i] = 'background-color: lightblue'
+            #
+            #     return styles
+            #
+            #
+            # styled_df = df1.style.apply(apply_style, axis=1)
+            #
+            # styled_df = styled_df.format({
+            #     "Receipts from Customers": "{:,.0f}",
+            #     "Government grants and tax incentives": "{:,.0f}",
+            #     "Net cash from / (used in) operating activities": "{:,.0f}",
+            #     "Net cash from / (used in) investing activities": "{:,.0f}",
+            #     "Proceeds from issues of equity securities": "{:,.0f}",
+            #     "Proceeds from issue of convertible debt securities": "{:,.0f}",
+            #     "Proceeds from borrowings": "{:,.0f}",
+            #     "Repayment of borrowings": "{:,.0f}",
+            #     "Dividends paid": "{:,.0f}",
+            #     "Net cash from / (used in) financing activities": "{:,.0f}",
+            #     "Total Financing Facilities (Amount drawn at quarter end)": "{:,.0f}",
+            #     "Unused financing facilities available at quarter end": "{:,.0f}",
+            #     "Total relevant outgoings": "{:,.0f}",
+            #     "Cash and cash equivalents at quarter end": "{:,.0f}",
+            #     "Total available funding": "{:,.0f}",
+            #     "IQ Cash": "{:,.0f}",
+            #     "IQ Cash Burn": "{:,.0f}"
+            # })
+            st.dataframe(df1, key="ticker",use_container_width=True, )
+
+
 
         with col3:
-            st.metric(label="CFO", value='{:.0f}'.format(float(df1["Net cash from / (used in) operating activities"].iloc[0])),
-                      help="Net cash from / (used in) operating activities")
-            st.metric(label="CFI", value='{:.0f}'.format(float(df1["Net cash from / (used in) investing activities"].iloc[0])),
-                      help="Net cash from / (used in) investing activities")
-            st.metric(label="CFF", value='{:.0f}'.format(float(df1["Net cash from / (used in) financing activities"].iloc[0])),
-                      help="Net cash from / (used in) financing activities")
+            pass
+            # st.metric(label="CFO", value='{:.0f}'.format(float(df1["Net cash from / (used in) operating activities"].iloc[0])),
+            #           help="Net cash from / (used in) operating activities")
+            # st.metric(label="CFI", value='{:.0f}'.format(float(df1["Net cash from / (used in) investing activities"].iloc[0])),
+            #           help="Net cash from / (used in) investing activities")
+            # st.metric(label="CFF", value='{:.0f}'.format(float(df1["Net cash from / (used in) financing activities"].iloc[0])),
+            #           help="Net cash from / (used in) financing activities")
 
         st.subheader("📄Reports/Announcements")
 
@@ -219,8 +278,7 @@ if st.session_state["authentication_status"]:
         # Displaying the DataFrame with specific column configurations
         st.dataframe(df_url, column_config={
             "url": st.column_config.LinkColumn("URL"),  # Link column for URL
-            "document_release_date": st.column_config.DateColumn("Publication Date", format="DD-MM-YYYY"),
-            # Date column for publication date
+            "document_release_date": st.column_config.DateColumn("Publication Date", format="DD-MM-YYYY"), # Date column for publication date
             "number_of_pages": "Pages",  # Column for number of pages
             "issuer_code": "Ticker"  # Column for ticker
         }, hide_index=True)

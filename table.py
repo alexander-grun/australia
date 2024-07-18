@@ -165,14 +165,20 @@ if st.session_state["authentication_status"]:
         iq_cash_burn_slicer = st.slider("IQ Cash Burn", min_value=min_iq_cash_burn, max_value=max_iq_cash_burn, value=(min_iq_cash_burn, max_iq_cash_burn),
                                    label_visibility="hidden")
 
-
-
-    sliced_df = (df[(df['Net cash from / (used in) operating activities'] >= st.session_state.cfo_slider[0]) &
-                    (df['Net cash from / (used in) operating activities'] <= st.session_state.cfo_slider[1]) &
-                    (df['Net cash from / (used in) investing activities'] >= cfi_slicer[0]) &
-                    (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
-                    (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
-                    (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
+    sliced_df = (
+        df[
+            (df['Net cash from / (used in) operating activities'] >= st.session_state.cfo_slider[0]) &
+            (df['Net cash from / (used in) operating activities'] <= st.session_state.cfo_slider[1]) &
+            (df['Net cash from / (used in) investing activities'] >= cfi_slicer[0]) &
+            (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
+            (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
+            (df['Net cash from / (used in) financing activities'] <= cff_slicer[1]) &
+            (df['IQ Cash'] >= iq_cash_slicer[0]) &
+            (df['IQ Cash'] <= iq_cash_slicer[1]) &
+            (df['IQ Cash Burn'] >= iq_cash_burn_slicer[0]) &
+            (df['IQ Cash Burn'] <= iq_cash_burn_slicer[1])
+            ]
+    )
 
     sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightblue', subset=["IQ Cash", "IQ Cash Burn"])
     sliced_df = sliced_df.format({

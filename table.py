@@ -116,6 +116,8 @@ if st.session_state["authentication_status"]:
     min_cfo, max_cfo = int(df['Net cash from / (used in) operating activities'].min()), int(df['Net cash from / (used in) operating activities'].max())
     min_cfi, max_cfi = int(df['Net cash from / (used in) investing activities'].min()), int(df['Net cash from / (used in) investing activities'].max())
     min_cff, max_cff = int(df['Net cash from / (used in) financing activities'].min()), int(df['Net cash from / (used in) financing activities'].max())
+    min_iq_cash, max_iq_cash = int(df['IQ Cash'].min()), int(df['IQ Cash'].max())
+    min_iq_cash_burn, max_iq_cash_burn = int(df['IQ Cash Burn'].min()), int(df['IQ Cash Burn'].max())
 
     # Initialize session state variables if they don't exist
     if 'cfo_slider' not in st.session_state:
@@ -125,11 +127,11 @@ if st.session_state["authentication_status"]:
     if 'cfo_numeric_max' not in st.session_state:
         st.session_state.cfo_numeric_max = max_cfo
 
-    col1, col2, col3,col4, col5 = st.columns([2,1,2,1,2])
+    col1, col2, col3, col4, col5 = st.columns([2,1,2,1,2])
 
     with col1:
         st.html('<span class="slider"></span>')
-        st.subheader("CFO")
+        st.write("**CFO**")
         col1_1, col1_2, col1_3 = st.columns([2, 1, 2])
         with col1_1:
             # Numeric input for CFO min and max
@@ -145,10 +147,25 @@ if st.session_state["authentication_status"]:
 
 
     with col3:
-        cfi_slicer = st.slider("CFI", min_value=min_cfi, max_value=max_cfi, value=(min_cfi, max_cfi))
+        st.write("**CFI**")
+        cfi_slicer = st.slider("CFI", min_value=min_cfi, max_value=max_cfi, value=(min_cfi, max_cfi),label_visibility="hidden")
 
     with col5:
-        cff_slicer = st.slider("CFF", min_value=min_cff, max_value=max_cff, value=(min_cff, max_cff))
+        st.write("**CFF**")
+        cff_slicer = st.slider("CFF", min_value=min_cff, max_value=max_cff, value=(min_cff, max_cff), label_visibility="hidden")
+
+    col1, col2, col3, col4, col5 = st.columns([2, 1, 2, 1, 2])
+
+    with col3:
+        st.write("**IQ Cash**")
+        iq_cash_slicer = st.slider("IQ Cash", min_value=min_iq_cash, max_value=max_iq_cash, value=(min_iq_cash, max_iq_cash),label_visibility="hidden")
+
+    with col5:
+        st.write("**IQ Cash Burn**")
+        iq_cash_burn_slicer = st.slider("IQ Cash Burn", min_value=min_iq_cash_burn, max_value=max_iq_cash_burn, value=(min_iq_cash_burn, max_iq_cash_burn),
+                                   label_visibility="hidden")
+
+
 
     sliced_df = (df[(df['Net cash from / (used in) operating activities'] >= st.session_state.cfo_slider[0]) &
                     (df['Net cash from / (used in) operating activities'] <= st.session_state.cfo_slider[1]) &
@@ -156,7 +173,7 @@ if st.session_state["authentication_status"]:
                     (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
                     (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
                     (df['Net cash from / (used in) financing activities'] <= cff_slicer[1])])
-    
+
     sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightblue', subset=["IQ Cash", "IQ Cash Burn"])
     sliced_df = sliced_df.format({
     "Receipts from Customers": "{:,.0f}",

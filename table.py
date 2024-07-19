@@ -5,7 +5,7 @@ import yaml
 from yaml.loader import SafeLoader
 import pandas as pd
 
-st.set_page_config(page_title="ASX", page_icon="💹", layout="wide")
+st.set_page_config(page_title="ASX IQ", page_icon="💹", layout="wide")
 st.html("styles.html")
 st.elements.utils._shown_default_value_warning=True
 
@@ -43,7 +43,7 @@ if st.session_state["authentication_status"]:
     authenticator.logout(location='sidebar')
     with st.sidebar:
         st.write(f'Welcome *{st.session_state["name"]}*',)
-    st.title('ASX - Premium analysis')
+    st.title('ASX IQ - Premium analysis')
 
     #######################################################################___APP___#######################################
     conn = st.connection("gsheets", type=GSheetsConnection)
@@ -334,7 +334,7 @@ elif st.session_state["authentication_status"] is None:
 
 
 # Visible to all
-    st.title("ASX - public")
+    st.title("ASX IQ - public")
 
     conn = st.connection("gsheets", type=GSheetsConnection)
 

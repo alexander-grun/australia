@@ -50,6 +50,7 @@ if st.session_state["authentication_status"]:
 
     df = conn.query('''select sh1."Ticker",
                             com."Company Name",
+                            com."GICS industry group" as Industry, 
                             sh1."Year-Quarter",                            
                             sh1."Units/Currency",
                             sh1."Quarter Ended (current quarter)",
@@ -72,6 +73,7 @@ if st.session_state["authentication_status"]:
                             sh1."Section 8.8",
                             sh1."IQ Cash",
                             sh1."IQ Cash Burn",
+                            sh1."IQ Cash Cover",
                             com."Business Description" from "Sheet100" sh1  
                         LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
                         where sh1."Ticker" NOT NULL''')
@@ -96,6 +98,7 @@ if st.session_state["authentication_status"]:
     df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
     df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
     df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].str.replace(',', '.')
+    df['IQ Cash Cover'] = pd.to_numeric(df['IQ Cash Cover'], errors='coerce').round(1)
 
 
     df_url = conn.query('''select 
@@ -118,6 +121,7 @@ if st.session_state["authentication_status"]:
     min_cff, max_cff = int(df['Net cash from / (used in) financing activities'].min()), int(df['Net cash from / (used in) financing activities'].max())
     min_iq_cash, max_iq_cash = int(df['IQ Cash'].min()), int(df['IQ Cash'].max())
     min_iq_cash_burn, max_iq_cash_burn = int(df['IQ Cash Burn'].min()), int(df['IQ Cash Burn'].max())
+    min_iq_cash_cover, max_iq_cash_cover = df['IQ Cash Cover'].min(), df['IQ Cash Cover'].max()  # Use float for IQ Cash Cover
 
     # Initialize session state variables if they don't exist
     if 'cfo_slider' not in st.session_state:
@@ -156,13 +160,18 @@ if st.session_state["authentication_status"]:
 
     col1, col2, col3, col4, col5 = st.columns([2, 1, 2, 1, 2])
 
-    with col3:
+    with col1:
         st.write("**IQ Cash**")
         iq_cash_slicer = st.slider("IQ Cash", min_value=min_iq_cash, max_value=max_iq_cash, value=(min_iq_cash, max_iq_cash),label_visibility="hidden")
 
-    with col5:
+    with col3:
         st.write("**IQ Cash Burn**")
         iq_cash_burn_slicer = st.slider("IQ Cash Burn", min_value=min_iq_cash_burn, max_value=max_iq_cash_burn, value=(min_iq_cash_burn, max_iq_cash_burn),
+                                   label_visibility="hidden")
+
+    with col5:
+        st.write("**IQ Cash Cover**")
+        iq_cash_cover_slicer = st.slider("IQ Cash Cover", min_value=min_iq_cash_cover, max_value=max_iq_cash_cover, value=(min_iq_cash_cover, max_iq_cash_cover),
                                    label_visibility="hidden")
 
     sliced_df = (
@@ -176,11 +185,13 @@ if st.session_state["authentication_status"]:
             (df['IQ Cash'] >= iq_cash_slicer[0]) &
             (df['IQ Cash'] <= iq_cash_slicer[1]) &
             (df['IQ Cash Burn'] >= iq_cash_burn_slicer[0]) &
-            (df['IQ Cash Burn'] <= iq_cash_burn_slicer[1])
+            (df['IQ Cash Burn'] <= iq_cash_burn_slicer[1]) &
+            (df['IQ Cash Cover'] >= iq_cash_cover_slicer[0]) &
+            (df['IQ Cash Cover'] <= iq_cash_cover_slicer[1])
             ]
     )
 
-    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightblue', subset=["IQ Cash", "IQ Cash Burn"])
+    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightblue', subset=["IQ Cash", "IQ Cash Burn","IQ Cash Cover"])
     sliced_df = sliced_df.format({
     "Receipts from Customers": "{:,.0f}",
     "Government grants and tax incentives": "{:,.0f}",
@@ -198,7 +209,8 @@ if st.session_state["authentication_status"]:
     "Cash and cash equivalents at quarter end": "{:,.0f}",
     "Total available funding": "{:,.0f}",
     "IQ Cash": "{:,.0f}",
-    "IQ Cash Burn": "{:,.0f}"
+    "IQ Cash Burn": "{:,.0f}",
+    "IQ Cash Cover": "{:,.1f}"
     })
     st.dataframe(sliced_df, column_config={
         "Net cash from / (used in) operating activities": st.column_config.NumberColumn(label="CFO", help="Net cash from / (used in) operating activities"),
@@ -225,7 +237,7 @@ if st.session_state["authentication_status"]:
         with col2:
             df1.set_index("Year-Quarter", inplace=True)
             df1.sort_index(ascending=False, inplace = True)
-            df1 = df1.drop(['Ticker', 'Company Name','Units/Currency','Business Description'], axis=1)
+            df1 = df1.drop(['Ticker', 'Company Name','Units/Currency','Business Description', 'Industry'], axis=1)
             df1 = df1.transpose()
             #
             #
@@ -329,6 +341,7 @@ elif st.session_state["authentication_status"] is None:
     df = conn.query('''select
                              pub."Ticker",
                              pub."Company Name",
+                             com."GICS industry group" as Industry, 
                              pub."Quarter Ended (current quarter)",
                              pub."Net cash from / (used in) operating activities",
                              pub."Net cash from / (used in) investing activities",
@@ -365,16 +378,16 @@ elif st.session_state["authentication_status"] is None:
     if ticker:
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.write(f"Info: {df[df['Ticker'] == ticker][df.columns[6]].values[0]}")
+            st.write(f"Info: {df[df['Ticker'] == ticker][df.columns[7]].values[0]}")
         with col2:
             st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
         with col3:
             st.metric(label="CFO", value='{:.0f}'.format(
-                float(df[df['Ticker'] == ticker][df.columns[3]].values[0].replace(' ', '').replace(',', '.'))),
+                float(df[df['Ticker'] == ticker][df.columns[4]].values[0].replace(' ', '').replace(',', '.'))),
                       help="Net cash from / (used in) operating activities")
-            st.metric(label="CFI", value='{:.0f}'.format(df[df['Ticker'] == ticker][df.columns[4]].values[0]),
+            st.metric(label="CFI", value='{:.0f}'.format(df[df['Ticker'] == ticker][df.columns[5]].values[0]),
                       help="Net cash from / (used in) investing activities")
-            st.metric(label="CFF", value='{:.0f}'.format(df[df['Ticker'] == ticker][df.columns[5]].values[0]),
+            st.metric(label="CFF", value='{:.0f}'.format(df[df['Ticker'] == ticker][df.columns[6]].values[0]),
                       help="Net cash from / (used in) financing activities")
 
 

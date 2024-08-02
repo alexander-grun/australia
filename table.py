@@ -100,6 +100,8 @@ if st.session_state["authentication_status"]:
     df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].fillna(0)
     df['IQ Cash Cover'] = pd.to_numeric(df['IQ Cash Cover'], errors='coerce').round(1)
 
+    unique_count = df['Ticker'].nunique()
+
 
     df_url = conn.query('''select 
                             url.header,
@@ -114,7 +116,7 @@ if st.session_state["authentication_status"]:
                             AND url.header != 'error'
                             ''')
 
-    st.subheader("📊 Browse all")
+    st.subheader(f"📊 Browse all {unique_count} listings")
 
     min_cfo, max_cfo = int(df['Net cash from / (used in) operating activities'].min()), int(df['Net cash from / (used in) operating activities'].max())
     min_cfi, max_cfi = int(df['Net cash from / (used in) investing activities'].min()), int(df['Net cash from / (used in) investing activities'].max())

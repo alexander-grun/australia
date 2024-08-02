@@ -74,30 +74,30 @@ if st.session_state["authentication_status"]:
                             sh1."IQ Cash",
                             sh1."IQ Cash Burn",
                             sh1."IQ Cash Cover",
-                            com."Business Description" from "Sheet100" sh1  
+                            com."Business Description" from "Sheet1" sh1  
                         LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
                         where sh1."Ticker" NOT NULL''')
 
 
-    df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).astype(int)
-    df["Government grants and tax incentives"] = df["Government grants and tax incentives"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Net cash from / (used in) operating activities"] = df["Net cash from / (used in) operating activities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Net cash from / (used in) investing activities"] = df["Net cash from / (used in) investing activities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Proceeds from issues of equity securities"] = df["Proceeds from issues of equity securities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Proceeds from issue of convertible debt securities"] = df["Proceeds from issue of convertible debt securities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Proceeds from borrowings"] = df["Proceeds from borrowings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Repayment of borrowings"] = df["Repayment of borrowings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Dividends paid"] = df["Dividends paid"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Net cash from / (used in) financing activities"] = df["Net cash from / (used in) financing activities"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Total Financing Facilities (Amount drawn at quarter end)"] = df["Total Financing Facilities (Amount drawn at quarter end)"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Unused financing facilities available at quarter end"] = df["Unused financing facilities available at quarter end"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Cash and cash equivalents at quarter end"] = df["Cash and cash equivalents at quarter end"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Total available funding"] = df["Total available funding"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: f'{int(round(x))}').astype(int)
-    df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].str.replace(',', '.')
+    df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Government grants and tax incentives"] = df["Government grants and tax incentives"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Net cash from / (used in) operating activities"] = df["Net cash from / (used in) operating activities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Net cash from / (used in) investing activities"] = df["Net cash from / (used in) investing activities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Proceeds from issues of equity securities"] = df["Proceeds from issues of equity securities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Proceeds from issue of convertible debt securities"] = df["Proceeds from issue of convertible debt securities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Proceeds from borrowings"] = df["Proceeds from borrowings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Repayment of borrowings"] = df["Repayment of borrowings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Dividends paid"] = df["Dividends paid"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Net cash from / (used in) financing activities"] = df["Net cash from / (used in) financing activities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Total Financing Facilities (Amount drawn at quarter end)"] = df["Total Financing Facilities (Amount drawn at quarter end)"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Unused financing facilities available at quarter end"] = df["Unused financing facilities available at quarter end"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Cash and cash equivalents at quarter end"] = df["Cash and cash equivalents at quarter end"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Total available funding"] = df["Total available funding"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+    df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].fillna(0)
     df['IQ Cash Cover'] = pd.to_numeric(df['IQ Cash Cover'], errors='coerce').round(1)
 
 

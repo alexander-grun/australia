@@ -196,7 +196,7 @@ if st.session_state["authentication_status"]:
             ]
     )
 
-    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: gray', subset=["IQ Cash", "IQ Cash Burn","IQ Cash Cover"])
+    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightgray', subset=["IQ Cash", "IQ Cash Burn","IQ Cash Cover"])
     sliced_df = sliced_df.format({
     "Receipts from Customers": "{:,.0f}",
     "Government grants and tax incentives": "{:,.0f}",

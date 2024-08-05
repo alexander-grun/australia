@@ -48,38 +48,35 @@ if st.session_state["authentication_status"]:
     #######################################################################___APP___#######################################
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    df = conn.query('''select sh1."Ticker",
-                            com."Company Name",                                                     
-                            sh1."Units/Currency",
-                            sh1."Quarter Ended (current quarter)",                        
-                            sh1."Net cash from / (used in) operating activities",
-                            sh1."Net cash from / (used in) investing activities",
-                            sh1."Net cash from / (used in) financing activities",
-                            sh1."Cash and cash equivalents at quarter end",
-                            sh1."IQ Cash",
-                            sh1."IQ Cash Burn",
-                            sh1."IQ Cash Cover",
-                            com."GICS industry group" as Industry, 
-                            sh1."Year-Quarter",   
-                            sh1."Receipts from Customers",
-                            sh1."Government grants and tax incentives",                            
-                            sh1."Proceeds from issues of equity securities",
-                            sh1."Proceeds from issue of convertible debt securities",
-                            sh1."Proceeds from borrowings",
-                            sh1."Repayment of borrowings",
-                            sh1."Dividends paid",                            
-                            sh1."Total Financing Facilities (Amount drawn at quarter end)",
-                            sh1."Unused financing facilities available at quarter end",
-                            sh1."Total relevant outgoings",                            
-                            sh1."Total available funding",
-                            sh1."Estimated quarters of funding available",
-                            sh1."Section 8.8",
-                            sh1."IQ Cash",
-                            sh1."IQ Cash Burn",
-                            sh1."IQ Cash Cover",
-                            com."Business Description" from "Sheet1" sh1  
-                        LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
-                        where sh1."Ticker" NOT NULL''')
+    df = conn.query('''select sh1."Ticker",                          
+                                com."Company Name",                                                     
+                                sh1."Units/Currency",
+                                sh1."Quarter Ended (current quarter)",
+                                sh1."Net cash from / (used in) operating activities",
+                                sh1."Net cash from / (used in) investing activities",
+                                sh1."Net cash from / (used in) financing activities",
+                                sh1."Cash and cash equivalents at quarter end",
+                                sh1."IQ Cash",
+                                sh1."IQ Cash Burn",
+                                sh1."IQ Cash Cover",
+                                com."GICS industry group" as Industry, 
+                                sh1."Year-Quarter",   
+                                sh1."Receipts from Customers",
+                                sh1."Government grants and tax incentives",                            
+                                sh1."Proceeds from issues of equity securities",
+                                sh1."Proceeds from issue of convertible debt securities",
+                                sh1."Proceeds from borrowings",
+                                sh1."Repayment of borrowings",
+                                sh1."Dividends paid",                            
+                                sh1."Total Financing Facilities (Amount drawn at quarter end)",
+                                sh1."Unused financing facilities available at quarter end",
+                                sh1."Total relevant outgoings",
+                                sh1."Total available funding",
+                                sh1."Estimated quarters of funding available",
+                                sh1."Section 8.8",
+                                com."Business Description" from "Sheet1" sh1  
+                            LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
+                            where sh1."Ticker" NOT NULL''')
 
 
     df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
@@ -308,7 +305,7 @@ elif st.session_state["authentication_status"] is None:
 
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    df = conn.query('''select
+    df_pub = conn.query('''select
                              pub."Ticker",
                              pub."Company Name",
                              com."GICS industry group" as Industry, 
@@ -320,14 +317,14 @@ elif st.session_state["authentication_status"] is None:
                         LEFT JOIN "Company" com on pub.Ticker = com.Ticker 
                         where pub."Ticker" NOT NULL''')
     st.subheader("📊 Browse all")
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df_pub, use_container_width=True, hide_index=True)
 
     st.subheader("✏️ Select one")
     col1, col2, col3 = st.columns(3)
     with col1:
         ticker = st.selectbox(
             'Choose a ticker',
-            df['Ticker'].sort_values().unique().tolist(),
+            df_pub['Ticker'].sort_values().unique().tolist(),
             placeholder='start typing...'
         )
 
@@ -348,16 +345,16 @@ elif st.session_state["authentication_status"] is None:
     if ticker:
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.write(f"Info: {df[df['Ticker'] == ticker][df.columns[7]].values[0]}")
+            st.write(f"Info: {df_pub[df_pub['Ticker'] == ticker][df_pub.columns[7]].values[0]}")
         with col2:
-            st.data_editor(df[df['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
+            st.data_editor(df_pub[df_pub['Ticker'] == ticker].transpose(), key="ticker", use_container_width=True)
         with col3:
             st.metric(label="CFO", value='{:.0f}'.format(
-                float(df[df['Ticker'] == ticker][df.columns[4]].values[0].replace(' ', '').replace(',', '.'))),
+                float(df_pub[df_pub['Ticker'] == ticker][df_pub.columns[4]].values[0].replace(' ', '').replace(',', '.'))),
                       help="Net cash from / (used in) operating activities")
-            st.metric(label="CFI", value='{:.0f}'.format(df[df['Ticker'] == ticker][df.columns[5]].values[0]),
+            st.metric(label="CFI", value='{:.0f}'.format(df_pub[df_pub['Ticker'] == ticker][df_pub.columns[5]].values[0]),
                       help="Net cash from / (used in) investing activities")
-            st.metric(label="CFF", value='{:.0f}'.format(df[df['Ticker'] == ticker][df.columns[6]].values[0]),
+            st.metric(label="CFF", value='{:.0f}'.format(df_pub[df_pub['Ticker'] == ticker][df_pub.columns[6]].values[0]),
                       help="Net cash from / (used in) financing activities")
 
 

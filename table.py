@@ -97,7 +97,7 @@ if st.session_state["authentication_status"]:
     df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
     df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
     df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].fillna(0)
+    df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].fillna(0).apply(lambda x: round(float(str(x).replace(',', '.')), 1))
     df['IQ Cash Cover'] = pd.to_numeric(df['IQ Cash Cover'], errors='coerce').round(1)
 
     unique_count = df['Ticker'].nunique()
@@ -212,113 +212,78 @@ if st.session_state["authentication_status"]:
     "Total available funding": "{:,.0f}",
     "IQ Cash": "{:,.0f}",
     "IQ Cash Burn": "{:,.0f}",
-    "IQ Cash Cover": "{:,.1f}"
+    "IQ Cash Cover": "{:,.1f}",
     })
     st.dataframe(sliced_df, column_config={
         "Net cash from / (used in) operating activities": st.column_config.NumberColumn(label="CFO", help="Net cash from / (used in) operating activities"),
         "Net cash from / (used in) investing activities": st.column_config.NumberColumn(label="CFI",help="Net cash from / (used in) investing activities"),
         "Net cash from / (used in) financing activities": st.column_config.NumberColumn(label="CFF",help="Net cash from / (used in) financing activities"),
+        "Cash and cash equivalents at quarter end": st.column_config.NumberColumn(label="Cash",help="Cash and cash equivalents at quarter end"),
                                                 },
                  hide_index=True,
                  use_container_width=True)
 
     st.subheader("✏️ Analyze one company")
-    col1, col2, col3 = st.columns([1,1,3])
+
+
+    col1, col2 = st.columns([1,3])
+
     with col1:
         ticker = st.selectbox(
             'Choose a ticker',
             df['Ticker'].sort_values().unique().tolist(),
             placeholder='start typing...'
         )
-
-    if ticker:
-        col1, col2, col3 = st.columns([1,3,1])
-        df1 = df[df['Ticker'] == ticker]
-        with col1:
+        if ticker:
+            df1 = df[df['Ticker'] == ticker]
             st.caption(f"Info: {df1['Business Description'].iloc[0]}", )
         with col2:
             df1.set_index("Year-Quarter", inplace=True)
             df1.sort_index(ascending=False, inplace = True)
             df1 = df1.drop(['Ticker', 'Company Name','Units/Currency','Business Description', 'Industry'], axis=1)
+            df1.rename(columns={"Net cash from / (used in) operating activities": "CFO",
+                                "Net cash from / (used in) investing activities": "CFI",
+                                "Net cash from / (used in) financing activities": "CFF",
+                                "Net cash from / (used in) financing activities": "CFF",
+                                "Cash and cash equivalents at quarter end": "Cash",
+                                }, inplace=True)
+
             df1 = df1.transpose()
-            #
-            #
-            # def apply_style(row):
-            #     styles = ['' for _ in row.index]  # Initialize styles with empty strings for each column in the row
-            #
-            #     # Check if the row name (which is row.name) is either "IQ Cash" or "IQ Cash Burn"
-            #     if row.name == "IQ Cash" or row.name == "IQ Cash Burn":
-            #         # Iterate over each value (v) in the row and apply the style conditionally
-            #         for i, v in enumerate(row):
-            #             if v < 0:
-            #                 styles[i] = 'background-color: lightblue'
-            #
-            #     return styles
-            #
-            #
-            # styled_df = df1.style.apply(apply_style, axis=1)
-            #
-            # styled_df = styled_df.format({
-            #     "Receipts from Customers": "{:,.0f}",
-            #     "Government grants and tax incentives": "{:,.0f}",
-            #     "Net cash from / (used in) operating activities": "{:,.0f}",
-            #     "Net cash from / (used in) investing activities": "{:,.0f}",
-            #     "Proceeds from issues of equity securities": "{:,.0f}",
-            #     "Proceeds from issue of convertible debt securities": "{:,.0f}",
-            #     "Proceeds from borrowings": "{:,.0f}",
-            #     "Repayment of borrowings": "{:,.0f}",
-            #     "Dividends paid": "{:,.0f}",
-            #     "Net cash from / (used in) financing activities": "{:,.0f}",
-            #     "Total Financing Facilities (Amount drawn at quarter end)": "{:,.0f}",
-            #     "Unused financing facilities available at quarter end": "{:,.0f}",
-            #     "Total relevant outgoings": "{:,.0f}",
-            #     "Cash and cash equivalents at quarter end": "{:,.0f}",
-            #     "Total available funding": "{:,.0f}",
-            #     "IQ Cash": "{:,.0f}",
-            #     "IQ Cash Burn": "{:,.0f}"
-            # })
-            st.dataframe(df1, key="ticker",use_container_width=True, )
+
+            st.write(" ")
+            st.write(" ")
+            st.dataframe(df1, key="ticker",use_container_width=True,)
 
 
+    st.subheader("📄Reports/Announcements")
 
-        with col3:
-            pass
-            # st.metric(label="CFO", value='{:.0f}'.format(float(df1["Net cash from / (used in) operating activities"].iloc[0])),
-            #           help="Net cash from / (used in) operating activities")
-            # st.metric(label="CFI", value='{:.0f}'.format(float(df1["Net cash from / (used in) investing activities"].iloc[0])),
-            #           help="Net cash from / (used in) investing activities")
-            # st.metric(label="CFF", value='{:.0f}'.format(float(df1["Net cash from / (used in) financing activities"].iloc[0])),
-            #           help="Net cash from / (used in) financing activities")
+    # Data preprocessing and type conversion
+    df_url['Predicted_Quartery_report'] = df_url['Predicted_Quartery_report'].fillna(0).astype(int)
+    df_url['number_of_pages'] = df_url['number_of_pages'].fillna(0).astype(int)
+    df_url['document_release_date'] = pd.to_datetime(df_url['document_release_date'], errors='coerce')
+    df_url['document_release_date'] = df_url['document_release_date'].apply(
+        lambda x: x.strftime('%m-%d-%Y') if pd.notnull(x) else x)
 
-        st.subheader("📄Reports/Announcements")
+    # Toggle to show all announcements or only quarterly reports
+    on = st.toggle("Show all Announcements")
+    if on:
+        df_url = df_url[df_url['issuer_code'] == ticker].copy()  # Filter by ticker if show all is toggled on
+    else:
+        st.caption("Reports only")
+        df_url = df_url[(df_url['issuer_code'] == ticker) & (
+                    df_url['Predicted_Quartery_report'] == 1)].copy()  # Filter for quarterly reports if toggled off
 
-        # Data preprocessing and type conversion
-        df_url['Predicted_Quartery_report'] = df_url['Predicted_Quartery_report'].fillna(0).astype(int)
-        df_url['number_of_pages'] = df_url['number_of_pages'].fillna(0).astype(int)
-        df_url['document_release_date'] = pd.to_datetime(df_url['document_release_date'], errors='coerce')
-        df_url['document_release_date'] = df_url['document_release_date'].apply(
-            lambda x: x.strftime('%m-%d-%Y') if pd.notnull(x) else x)
+    # Dropping unnecessary column and resetting index
+    df_url = df_url.drop(columns=['Predicted_Quartery_report'])
+    df_url = df_url.reset_index(drop=True)
 
-        # Toggle to show all announcements or only quarterly reports
-        on = st.toggle("Show all Announcements")
-        if on:
-            df_url = df_url[df_url['issuer_code'] == ticker].copy()  # Filter by ticker if show all is toggled on
-        else:
-            st.caption("Reports only")
-            df_url = df_url[(df_url['issuer_code'] == ticker) & (
-                        df_url['Predicted_Quartery_report'] == 1)].copy()  # Filter for quarterly reports if toggled off
-
-        # Dropping unnecessary column and resetting index
-        df_url = df_url.drop(columns=['Predicted_Quartery_report'])
-        df_url = df_url.reset_index(drop=True)
-
-        # Displaying the DataFrame with specific column configurations
-        st.dataframe(df_url, column_config={
-            "url": st.column_config.LinkColumn("URL"),  # Link column for URL
-            "document_release_date": st.column_config.DateColumn("Publication Date", format="DD-MM-YYYY"), # Date column for publication date
-            "number_of_pages": "Pages",  # Column for number of pages
-            "issuer_code": "Ticker"  # Column for ticker
-        }, hide_index=True)
+    # Displaying the DataFrame with specific column configurations
+    st.dataframe(df_url, column_config={
+        "url": st.column_config.LinkColumn("URL"),  # Link column for URL
+        "document_release_date": st.column_config.DateColumn("Publication Date", format="DD-MM-YYYY"), # Date column for publication date
+        "number_of_pages": "Pages",  # Column for number of pages
+        "issuer_code": "Ticker"  # Column for ticker
+    }, hide_index=True)
 
     st.subheader("🕗Recent Placements")
     st.write("Coming soon …")

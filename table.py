@@ -49,25 +49,28 @@ if st.session_state["authentication_status"]:
     conn = st.connection("gsheets", type=GSheetsConnection)
 
     df = conn.query('''select sh1."Ticker",
-                            com."Company Name",
-                            com."GICS industry group" as Industry, 
-                            sh1."Year-Quarter",                            
+                            com."Company Name",                                                     
                             sh1."Units/Currency",
-                            sh1."Quarter Ended (current quarter)",
-                            sh1."Receipts from Customers",
-                            sh1."Government grants and tax incentives",
+                            sh1."Quarter Ended (current quarter)",                        
                             sh1."Net cash from / (used in) operating activities",
                             sh1."Net cash from / (used in) investing activities",
+                            sh1."Net cash from / (used in) financing activities",
+                            sh1."Cash and cash equivalents at quarter end",
+                            sh1."IQ Cash",
+                            sh1."IQ Cash Burn",
+                            sh1."IQ Cash Cover",
+                            com."GICS industry group" as Industry, 
+                            sh1."Year-Quarter",   
+                            sh1."Receipts from Customers",
+                            sh1."Government grants and tax incentives",                            
                             sh1."Proceeds from issues of equity securities",
                             sh1."Proceeds from issue of convertible debt securities",
                             sh1."Proceeds from borrowings",
                             sh1."Repayment of borrowings",
-                            sh1."Dividends paid",
-                            sh1."Net cash from / (used in) financing activities",
+                            sh1."Dividends paid",                            
                             sh1."Total Financing Facilities (Amount drawn at quarter end)",
                             sh1."Unused financing facilities available at quarter end",
-                            sh1."Total relevant outgoings",
-                            sh1."Cash and cash equivalents at quarter end",
+                            sh1."Total relevant outgoings",                            
                             sh1."Total available funding",
                             sh1."Estimated quarters of funding available",
                             sh1."Section 8.8",
@@ -193,7 +196,7 @@ if st.session_state["authentication_status"]:
             ]
     )
 
-    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightblue', subset=["IQ Cash", "IQ Cash Burn","IQ Cash Cover"])
+    sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightgray', subset=["IQ Cash", "IQ Cash Burn","IQ Cash Cover"])
     sliced_df = sliced_df.format({
     "Receipts from Customers": "{:,.0f}",
     "Government grants and tax incentives": "{:,.0f}",

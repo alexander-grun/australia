@@ -9,23 +9,7 @@ st.set_page_config(page_title="ASX IQ", page_icon="💹", layout="wide")
 st.html("styles.html")
 st.elements.utils._shown_default_value_warning=True
 
-
-###########___Functions___##################
-
-# Function to update the slider when number input changes
-def update_cfo_slider():
-    st.session_state.cfo_slider = (st.session_state.cfo_numeric_min, st.session_state.cfo_numeric_max)
-
-
-# Function to update number input when slider changes
-def update_cfo_numeric():
-    st.session_state.cfo_numeric_min, st.session_state.cfo_numeric_max = st.session_state.cfo_slider
-
-
-def apply_odd_row_class(row):
-    return ["background-color: #f8f8f8" if row.name % 2 != 0 else "" for _ in row]
-
-
+# Read configuration for authenticator
 with open('./config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
 
@@ -45,153 +29,225 @@ if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*',)
     st.title('ASX IQ - Premium analysis')
 
-    #######################################################################___APP___#######################################
-    conn = st.connection("gsheets", type=GSheetsConnection)
 
-    df = conn.query('''select sh1."Ticker",                          
-                                com."Company Name",                                                     
-                                sh1."Units/Currency",
-                                sh1."Quarter Ended (current quarter)",
-                                sh1."Net cash from / (used in) operating activities",
-                                sh1."Net cash from / (used in) investing activities",
-                                sh1."Net cash from / (used in) financing activities",
-                                sh1."Cash and cash equivalents at quarter end",
-                                sh1."IQ Cash",
-                                sh1."IQ Cash Burn",
-                                sh1."IQ Cash Cover",
-                                com."GICS industry group" as Industry, 
-                                sh1."Year-Quarter",   
-                                sh1."Receipts from Customers",
-                                sh1."Government grants and tax incentives",                            
-                                sh1."Proceeds from issues of equity securities",
-                                sh1."Proceeds from issue of convertible debt securities",
-                                sh1."Proceeds from borrowings",
-                                sh1."Repayment of borrowings",
-                                sh1."Dividends paid",                            
-                                sh1."Total Financing Facilities (Amount drawn at quarter end)",
-                                sh1."Unused financing facilities available at quarter end",
-                                sh1."Total relevant outgoings",
-                                sh1."Total available funding",
-                                sh1."Estimated quarters of funding available",
-                                sh1."Section 8.8",
-                                com."Business Description" from "Sheet1" sh1  
-                            LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
-                            where sh1."Ticker" NOT NULL''')
+    if st.session_state["authentication_status"]:
+        conn = st.connection("gsheets", type=GSheetsConnection)
+
+        df = conn.query('''select sh1."Ticker",                          
+                                    com."Company Name",                                                     
+                                    sh1."Units/Currency",
+                                    sh1."Quarter Ended (current quarter)",
+                                    sh1."Net cash from / (used in) operating activities",
+                                    sh1."Net cash from / (used in) investing activities",
+                                    sh1."Net cash from / (used in) financing activities",
+                                    sh1."Cash and cash equivalents at quarter end",
+                                    sh1."IQ Cash",
+                                    sh1."IQ Cash Burn",
+                                    sh1."IQ Cash Cover",
+                                    com."GICS industry group" as Industry, 
+                                    sh1."Year-Quarter",   
+                                    sh1."Receipts from Customers",
+                                    sh1."Government grants and tax incentives",                            
+                                    sh1."Proceeds from issues of equity securities",
+                                    sh1."Proceeds from issue of convertible debt securities",
+                                    sh1."Proceeds from borrowings",
+                                    sh1."Repayment of borrowings",
+                                    sh1."Dividends paid",                            
+                                    sh1."Total Financing Facilities (Amount drawn at quarter end)",
+                                    sh1."Unused financing facilities available at quarter end",
+                                    sh1."Total relevant outgoings",
+                                    sh1."Total available funding",
+                                    sh1."Estimated quarters of funding available",
+                                    sh1."Section 8.8",
+                                    com."Business Description" from "Sheet1" sh1  
+                                LEFT JOIN "Company" com on sh1.Ticker = com.Ticker 
+                                where sh1."Ticker" NOT NULL''')
+
+        df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Government grants and tax incentives"] = df["Government grants and tax incentives"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Net cash from / (used in) operating activities"] = df[
+            "Net cash from / (used in) operating activities"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Net cash from / (used in) investing activities"] = df[
+            "Net cash from / (used in) investing activities"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Proceeds from issues of equity securities"] = df["Proceeds from issues of equity securities"].fillna(
+            0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Proceeds from issue of convertible debt securities"] = df[
+            "Proceeds from issue of convertible debt securities"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Proceeds from borrowings"] = df["Proceeds from borrowings"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Repayment of borrowings"] = df["Repayment of borrowings"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Dividends paid"] = df["Dividends paid"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Net cash from / (used in) financing activities"] = df[
+            "Net cash from / (used in) financing activities"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Total Financing Facilities (Amount drawn at quarter end)"] = df[
+            "Total Financing Facilities (Amount drawn at quarter end)"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Unused financing facilities available at quarter end"] = df[
+            "Unused financing facilities available at quarter end"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Cash and cash equivalents at quarter end"] = df["Cash and cash equivalents at quarter end"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Total available funding"] = df["Total available funding"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(
+            lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
+        df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].fillna(0).apply(
+            lambda x: round(float(str(x).replace(',', '.')), 1))
+        df['IQ Cash Cover'] = pd.to_numeric(df['IQ Cash Cover'], errors='coerce').round(1)
+
+        df_url = conn.query('''select 
+                                    url.header,
+                                    url.document_release_date,
+                                    url.number_of_pages,
+                                    url.size,
+                                    url.url,
+                                    url.Predicted_Quartery_report,
+                                    url.issuer_code
+                                    from "URLS" url
+                                    where url.issuer_code  NOT NULL
+                                    AND url.header != 'error'
+                                    ''')
+
+    if st.session_state["authentication_status"]:
+        # Define ranges for each of the inputs
+        ranges = {
+            "cfo": (int(df['Net cash from / (used in) operating activities'].min()),
+                    int(df['Net cash from / (used in) operating activities'].max())),
+            "cfi": (int(df['Net cash from / (used in) investing activities'].min()),
+                    int(df['Net cash from / (used in) investing activities'].max())),
+            "cff": (int(df['Net cash from / (used in) financing activities'].min()),
+                    int(df['Net cash from / (used in) financing activities'].max())),
+            "iq_cash": (int(df['IQ Cash'].min()), int(df['IQ Cash'].max())),
+            "iq_cash_burn": (int(df['IQ Cash Burn'].min()), int(df['IQ Cash Burn'].max())),
+            "iq_cash_cover": (float(df['IQ Cash Cover'].min()), float(df['IQ Cash Cover'].max()))
+        }
+
+        # Initialize session state variables if they don't exist
+        for key in ranges.keys():
+            if f'{key}_slider' not in st.session_state:
+                st.session_state[f'{key}_slider'] = ranges[key]
+            if f'{key}_numeric_min' not in st.session_state:
+                st.session_state[f'{key}_numeric_min'] = ranges[key][0]
+            if f'{key}_numeric_max' not in st.session_state:
+                st.session_state[f'{key}_numeric_max'] = ranges[key][1]
 
 
-    df["Receipts from Customers"] = df["Receipts from Customers"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Government grants and tax incentives"] = df["Government grants and tax incentives"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Net cash from / (used in) operating activities"] = df["Net cash from / (used in) operating activities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Net cash from / (used in) investing activities"] = df["Net cash from / (used in) investing activities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Proceeds from issues of equity securities"] = df["Proceeds from issues of equity securities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Proceeds from issue of convertible debt securities"] = df["Proceeds from issue of convertible debt securities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Proceeds from borrowings"] = df["Proceeds from borrowings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Repayment of borrowings"] = df["Repayment of borrowings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Dividends paid"] = df["Dividends paid"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Net cash from / (used in) financing activities"] = df["Net cash from / (used in) financing activities"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Total Financing Facilities (Amount drawn at quarter end)"] = df["Total Financing Facilities (Amount drawn at quarter end)"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Unused financing facilities available at quarter end"] = df["Unused financing facilities available at quarter end"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Cash and cash equivalents at quarter end"] = df["Cash and cash equivalents at quarter end"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Total available funding"] = df["Total available funding"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Total relevant outgoings"] = df["Total relevant outgoings"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["IQ Cash"] = df["IQ Cash"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["IQ Cash Burn"] = df["IQ Cash Burn"].fillna(0).apply(lambda x: int(round(float(str(x).replace(',', '.')))))
-    df["Estimated quarters of funding available"] = df["Estimated quarters of funding available"].fillna(0).apply(lambda x: round(float(str(x).replace(',', '.')), 1))
-    df['IQ Cash Cover'] = pd.to_numeric(df['IQ Cash Cover'], errors='coerce').round(1)
-
-    unique_count = df['Ticker'].nunique()
+    # Function to update the sliders when number inputs change
+    def update_slider(key_prefix):
+        st.session_state[f"{key_prefix}_slider"] = (
+            st.session_state[f"{key_prefix}_numeric_min"],
+            st.session_state[f"{key_prefix}_numeric_max"]
+        )
 
 
-    df_url = conn.query('''select 
-                            url.header,
-                            url.document_release_date,
-                            url.number_of_pages,
-                            url.size,
-                            url.url,
-                            url.Predicted_Quartery_report,
-                            url.issuer_code
-                            from "URLS" url
-                            where url.issuer_code  NOT NULL
-                            AND url.header != 'error'
-                            ''')
+    if st.session_state["authentication_status"]:
 
-    st.subheader(f"📊 Browse all {unique_count} listings")
+        col1, col2, col3, col4, col5 = st.columns([2, 1, 2, 1, 2])
 
-    min_cfo, max_cfo = int(df['Net cash from / (used in) operating activities'].min()), int(df['Net cash from / (used in) operating activities'].max())
-    min_cfi, max_cfi = int(df['Net cash from / (used in) investing activities'].min()), int(df['Net cash from / (used in) investing activities'].max())
-    min_cff, max_cff = int(df['Net cash from / (used in) financing activities'].min()), int(df['Net cash from / (used in) financing activities'].max())
-    min_iq_cash, max_iq_cash = int(df['IQ Cash'].min()), int(df['IQ Cash'].max())
-    min_iq_cash_burn, max_iq_cash_burn = int(df['IQ Cash Burn'].min()), int(df['IQ Cash Burn'].max())
-    min_iq_cash_cover, max_iq_cash_cover = df['IQ Cash Cover'].min(), df['IQ Cash Cover'].max()  # Use float for IQ Cash Cover
+        # CFO Inputs
+        with col1:
+            st.write("**CFO**")
+            col1_1, col1_3 = st.columns([1, 1])
+            with col1_1:
+                st.number_input('Min', min_value=ranges["cfo"][0], max_value=ranges["cfo"][1], value=ranges["cfo"][0],
+                                key='cfo_numeric_min', on_change=lambda: update_slider('cfo'))
+            with col1_3:
+                st.number_input('Max', min_value=ranges["cfo"][0], max_value=ranges["cfo"][1], value=ranges["cfo"][1],
+                                key='cfo_numeric_max', on_change=lambda: update_slider('cfo'))
 
-    # Initialize session state variables if they don't exist
-    if 'cfo_slider' not in st.session_state:
-        st.session_state.cfo_slider = (min_cfo, max_cfo)
-    if 'cfo_numeric_min' not in st.session_state:
-        st.session_state.cfo_numeric_min = min_cfo
-    if 'cfo_numeric_max' not in st.session_state:
-        st.session_state.cfo_numeric_max = max_cfo
+        # CFI Inputs
+        with col3:
+            st.write("**CFI**")
+            col3_1, col3_3 = st.columns([1, 1])
+            with col3_1:
+                st.number_input('Min', min_value=ranges["cfi"][0], max_value=ranges["cfi"][1], value=ranges["cfi"][0],
+                                key='cfi_numeric_min', on_change=lambda: update_slider('cfi'))
+            with col3_3:
+                st.number_input('Max', min_value=ranges["cfi"][0], max_value=ranges["cfi"][1], value=ranges["cfi"][1],
+                                key='cfi_numeric_max', on_change=lambda: update_slider('cfi'))
 
-    col1, col2, col3, col4, col5 = st.columns([2,1,2,1,2])
+        # CFF Inputs
+        with col5:
+            st.write("**CFF**")
+            col5_1, col5_3 = st.columns([1, 1])
+            with col5_1:
+                st.number_input('Min', min_value=ranges["cff"][0], max_value=ranges["cff"][1], value=ranges["cff"][0],
+                                key='cff_numeric_min', on_change=lambda: update_slider('cff'))
+            with col5_3:
+                st.number_input('Max', min_value=ranges["cff"][0], max_value=ranges["cff"][1], value=ranges["cff"][1],
+                                key='cff_numeric_max', on_change=lambda: update_slider('cff'))
 
-    with col1:
-        st.html('<span class="slider"></span>')
-        st.write("**CFO**")
-        col1_1, col1_2, col1_3 = st.columns([2, 1, 2])
-        with col1_1:
-            # Numeric input for CFO min and max
-            st.number_input('Min', min_value=min_cfo, max_value=max_cfo, value=min_cfo, key='cfo_numeric_min',
-                            on_change=update_cfo_slider)
-        with col1_3:
-            st.number_input('Max', min_value=min_cfo, max_value=max_cfo, value=max_cfo, key='cfo_numeric_max',
-                            on_change=update_cfo_slider)
+        col1, col2, col3, col4, col5 = st.columns([2, 1, 2, 1, 2])
 
-        # Slider for CFO
-        st.slider("CFO", min_value=min_cfo, max_value=max_cfo, value=(min_cfo, max_cfo), key='cfo_slider',
-                  on_change=update_cfo_numeric, label_visibility="hidden")
+        # IQ Cash Inputs
+        with col1:
+            st.write("**IQ Cash**")
+            col1_1, col1_3 = st.columns([1, 1])
+            with col1_1:
+                st.number_input('Min', min_value=ranges["iq_cash"][0], max_value=ranges["iq_cash"][1],
+                                value=ranges["iq_cash"][0], key='iq_cash_numeric_min',
+                                on_change=lambda: update_slider('iq_cash'))
+            with col1_3:
+                st.number_input('Max', min_value=ranges["iq_cash"][0], max_value=ranges["iq_cash"][1],
+                                value=ranges["iq_cash"][1], key='iq_cash_numeric_max',
+                                on_change=lambda: update_slider('iq_cash'))
 
+        # IQ Cash Burn Inputs
+        with col3:
+            st.write("**IQ Cash Burn**")
+            col3_1, col3_3 = st.columns([1, 1])
+            with col3_1:
+                st.number_input('Min', min_value=ranges["iq_cash_burn"][0], max_value=ranges["iq_cash_burn"][1],
+                                value=ranges["iq_cash_burn"][0], key='iq_cash_burn_numeric_min',
+                                on_change=lambda: update_slider('iq_cash_burn'))
+            with col3_3:
+                st.number_input('Max', min_value=ranges["iq_cash_burn"][0], max_value=ranges["iq_cash_burn"][1],
+                                value=ranges["iq_cash_burn"][1], key='iq_cash_burn_numeric_max',
+                                on_change=lambda: update_slider('iq_cash_burn'))
 
-    with col3:
-        st.write("**CFI**")
-        cfi_slicer = st.slider("CFI", min_value=min_cfi, max_value=max_cfi, value=(min_cfi, max_cfi),label_visibility="hidden")
-
-    with col5:
-        st.write("**CFF**")
-        cff_slicer = st.slider("CFF", min_value=min_cff, max_value=max_cff, value=(min_cff, max_cff), label_visibility="hidden")
-
-    col1, col2, col3, col4, col5 = st.columns([2, 1, 2, 1, 2])
-
-    with col1:
-        st.write("**IQ Cash**")
-        iq_cash_slicer = st.slider("IQ Cash", min_value=min_iq_cash, max_value=max_iq_cash, value=(min_iq_cash, max_iq_cash),label_visibility="hidden")
-
-    with col3:
-        st.write("**IQ Cash Burn**")
-        iq_cash_burn_slicer = st.slider("IQ Cash Burn", min_value=min_iq_cash_burn, max_value=max_iq_cash_burn, value=(min_iq_cash_burn, max_iq_cash_burn),
-                                   label_visibility="hidden")
-
-    with col5:
-        st.write("**IQ Cash Cover**")
-        iq_cash_cover_slicer = st.slider("IQ Cash Cover", min_value=min_iq_cash_cover, max_value=max_iq_cash_cover, value=(min_iq_cash_cover, max_iq_cash_cover),
-                                   label_visibility="hidden")
+        # IQ Cash Cover Inputs
+        with col5:
+            st.write("**IQ Cash Cover**")
+            col5_1, col5_3 = st.columns([1, 1])
+            with col5_1:
+                st.number_input('Min', min_value=ranges["iq_cash_cover"][0], max_value=ranges["iq_cash_cover"][1],
+                                value=ranges["iq_cash_cover"][0], key='iq_cash_cover_numeric_min',
+                                on_change=lambda: update_slider('iq_cash_cover'))
+            with col5_3:
+                st.number_input('Max', min_value=ranges["iq_cash_cover"][0], max_value=ranges["iq_cash_cover"][1],
+                                value=ranges["iq_cash_cover"][1], key='iq_cash_cover_numeric_max',
+                                on_change=lambda: update_slider('iq_cash_cover'))
 
     sliced_df = (
         df[
-            (df['Net cash from / (used in) operating activities'] >= st.session_state.cfo_slider[0]) &
-            (df['Net cash from / (used in) operating activities'] <= st.session_state.cfo_slider[1]) &
-            (df['Net cash from / (used in) investing activities'] >= cfi_slicer[0]) &
-            (df['Net cash from / (used in) investing activities'] <= cfi_slicer[1]) &
-            (df['Net cash from / (used in) financing activities'] >= cff_slicer[0]) &
-            (df['Net cash from / (used in) financing activities'] <= cff_slicer[1]) &
-            (df['IQ Cash'] >= iq_cash_slicer[0]) &
-            (df['IQ Cash'] <= iq_cash_slicer[1]) &
-            (df['IQ Cash Burn'] >= iq_cash_burn_slicer[0]) &
-            (df['IQ Cash Burn'] <= iq_cash_burn_slicer[1]) &
-            (df['IQ Cash Cover'] >= iq_cash_cover_slicer[0]) &
-            (df['IQ Cash Cover'] <= iq_cash_cover_slicer[1])
+            (df['Net cash from / (used in) operating activities'] >= st.session_state.cfo_numeric_min) &
+            (df['Net cash from / (used in) operating activities'] <= st.session_state.cfo_numeric_max) &
+            (df['Net cash from / (used in) investing activities'] >= st.session_state.cfi_numeric_min) &
+            (df['Net cash from / (used in) investing activities'] <= st.session_state.cfi_numeric_max) &
+            (df['Net cash from / (used in) financing activities'] >= st.session_state.cff_numeric_min) &
+            (df['Net cash from / (used in) financing activities'] <= st.session_state.cff_numeric_max) &
+            (df['IQ Cash'] >= st.session_state.iq_cash_numeric_min) &
+            (df['IQ Cash'] <= st.session_state.iq_cash_numeric_max) &
+            (df['IQ Cash Burn'] >= st.session_state.iq_cash_burn_numeric_min) &
+            (df['IQ Cash Burn'] <= st.session_state.iq_cash_burn_numeric_max) &
+            (df['IQ Cash Cover'] >= st.session_state.iq_cash_cover_numeric_min) &
+            (df['IQ Cash Cover'] <= st.session_state.iq_cash_cover_numeric_max)
             ]
     )
+
+
 
     sliced_df = sliced_df.style.applymap(lambda x: 'background-color: lightgray', subset=["IQ Cash", "IQ Cash Burn","IQ Cash Cover"])
     sliced_df = sliced_df.format({
@@ -214,6 +270,9 @@ if st.session_state["authentication_status"]:
     "IQ Cash Burn": "{:,.0f}",
     "IQ Cash Cover": "{:,.1f}",
     })
+    unique_count_total = df['Ticker'].nunique()
+    unique_count_filtered = sliced_df.data['Ticker'].nunique()
+    st.subheader(f"📊 Showing {unique_count_filtered}/ {unique_count_total} listings")
     st.dataframe(sliced_df, column_config={
         "Net cash from / (used in) operating activities": st.column_config.NumberColumn(label="CFO", help="Net cash from / (used in) operating activities"),
         "Net cash from / (used in) investing activities": st.column_config.NumberColumn(label="CFI",help="Net cash from / (used in) investing activities"),
